@@ -1,13 +1,13 @@
 function setup(){
-    let myCanvas = createCanvas(800, 800);
+    let myCanvas = createCanvas(700, 700);
     background(200);
     createPoints();
 }
 
 // Control variables
-let pointsNumber = 300;
+let pointsNumber = 600;
 let randomFactor = 200;
-let strokeDistance = 60;
+let lineDistance = 30;
 let lineStrokeWidth = 1;
 let pointsStrokeWidth = 5;
 let pColor = {
@@ -21,11 +21,14 @@ let points = [];
 let closerPoints = [];
 
 class Points{
-    constructor(x, y, speedY, speedX){
+    constructor(x, y, speedY, speedX, r, g, b){
         this.x = x;
         this.y = y;
         this.speedY = speedY;
         this.speedX = speedX;
+        this.r = r;
+        this.b = b;
+        this.g = g;
     }
 }
 
@@ -35,7 +38,12 @@ function createPoints(){
             random(width),
             random(height),
             (random(-randomFactor, randomFactor)/100),
-            (random(-randomFactor, randomFactor)/100)));
+            (random(-randomFactor, randomFactor)/100),
+            random(255),
+            random(255),
+            random(255)
+            )
+        );
     }
 }
 
@@ -53,10 +61,11 @@ function drawLines(){
         strokeWeight(lineStrokeWidth);
         points.forEach(otherPoint => {
             d = pointsDistance(p.x, p.y, otherPoint.x, otherPoint.y);
-            if(d < strokeDistance){                
+            if(d < lineDistance){                
                 //drawing
-                colorValue = (255/strokeDistance) * d;
+                colorValue = map(d, 0, lineDistance, 0, 255);
                 stroke(colorValue,colorValue, colorValue);
+                strokeWeight((1/lineDistance) * d);
                 line(p.x, p.y, otherPoint.x, otherPoint.y);
             }
         });
@@ -66,13 +75,9 @@ function drawLines(){
 
 function drawPoints(){
     push();
-    stroke(
-        pColor.r,
-        pColor.g,
-        pColor.b
-    );
     strokeWeight(pointsStrokeWidth);
     points.forEach(p => {
+        stroke(p.r, p.g, p.b);
         //drawing the points
         point(p.x, p.y);
 
@@ -80,16 +85,16 @@ function drawPoints(){
         p.y += p.speedY;
         p.x += p.speedX;
         if(p.y < 0){
-            p.y = width;
+            p.speedY *= -1;
         }
         if(p.x < 0){
-            p.x = height;
+            p.speedX *= -1;
         }
         if(p.y > width){
-            p.y = 0;
+            p.speedY *= -1;
         }
         if(p.x > height){
-            p.x = 0;
+            p.speedX *= -1;
         }
     });
     pop();
