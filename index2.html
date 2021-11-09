@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/addons/p5.dom.min.js"></script>
+    <script src="./PointsAndLines/CCapture.all.min.js"></script>
+    <script src="./PointsAndLines//gif.worker.js"></script>
+  </head>
+  <body>
+    <script>
+      const fr = 60; //framerate
+      let capturer = new CCapture({
+        format: "gif",
+        workersPath: "./PointsAndLines/",
+        framerate: fr,
+      });
+      let btn;
+      let counter = 1;
+      let centerX, centerY;
+      let squareSize;
+      let step;
+      let angle;
+      let div;
+
+      function setup() {
+        createCanvas(500, 500);
+        background(200);
+        frameRate(fr);
+        capturer.start();
+
+        createDiv("Recording!");
+        div = createDiv("0 seconds recorded!");
+        btn = createButton("Save").mousePressed(function () {
+          capturer.save();
+        });
+        createDiv("You need Chrome for this to work.");
+        createPoints();
+      }
+      // Control variables
+      let pointsNumber = 100;
+      let randomFactor = 150;
+      let lineDistance = 70;
+      let lineStrokeWidth = 7;
+      let pointsStrokeWidth = 8;
+      let pColor = {
+        r: 0,
+        g: 0,
+        b: 0,
+      };
+
+      // Array declarations (empty)
+      let points = [];
+      let closerPoints = [];
+
+      class Points {
+        constructor(x, y, speedY, speedX, r, g, b) {
+          this.x = x;
+          this.y = y;
+          this.speedY = speedY;
+          this.speedX = speedX;
+          this.r = r;
+          this.b = b;
+          this.g = g;
+        }
+      }
+
+      function createPoints() {
+        for (i = 0; i < pointsNumber; i++) {
+          points.push(
+            new Points(
+              random(width),
+              random(height),
+              random(-randomFactor, randomFactor) / 100,
+              random(-randomFactor, randomFactor) / 100,
+              random(255),
+              random(255),
+              random(255)
+            )
+          );
+        }
+      }
+
+      function pointsDistance(xA, yA, xB, yB) {
+        var xDiff = xA - xB;
+        var yDiff = yA - yB;
+
+        return Math.sqrt(xDiff * xDiff + yDiff * yDiff);
+      }
+
+      function drawLines() {
+        push();
+        points.forEach((p) => {
+          //find and draw the closer lines
+          strokeWeight(lineStrokeWidth);
+          points.forEach((otherPoint) => {
+            d = pointsDistance(p.x, p.y, otherPoint.x, otherPoint.y);
+            if (d < lineDistance) {
+              //drawing
+              colorValue = map(d, 0, lineDistance, 0, 255);
+              stroke(colorValue, colorValue, colorValue);
+              strokeWeight((1 / lineDistance) * d);
+              line(p.x, p.y, otherPoint.x, otherPoint.y);
+            }
+          });
+        });
+        pop();
+      }
+
+      function drawPoints() {
+        push();
+        strokeWeight(pointsStrokeWidth);
+        points.forEach((p) => {
+          stroke(p.r, p.g, p.b);
+          //drawing the points
+          point(p.x, p.y);
+
+          //update the position of points
+          p.y += p.speedY;
+          p.x += p.speedX;
+          if (p.y < 0) {
+            p.speedY *= -1;
+          }
+          if (p.x < 0) {
+            p.speedX *= -1;
+          }
+          if (p.y > width) {
+            p.speedY *= -1;
+          }
+          if (p.x > height) {
+            p.speedX *= -1;
+          }
+        });
+        pop();
+      }
+      function draw() {
+        clear();
+        drawLines();
+        drawPoints();
+
+        capturer.capture(document.getElementById("defaultCanvas0"));
+        div.html(`${floor(frameCount / fr)} seconds recorded`);
+        if (frameCount > fr * 60 * 10) {
+          // after 10 minutes
+          createDiv("Recording stopped!");
+          capturer.stop();
+          noLoop();
+        }
+      }
+    </script>
+  </body>
+</!DOCTYPE>
