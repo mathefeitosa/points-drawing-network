@@ -608,5 +608,4 @@
     }),
     a("/gif.worker.coffee");
 }.call(this, this));
-//# sourceMappingURL=gif.worker.js.map
 // gif.worker.js 0.1.6 - https://github.com/jnordberg/gif.js
